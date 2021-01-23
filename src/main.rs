@@ -43,15 +43,19 @@ fn main() {
     println!("chars: {}", contents.chars().count());
 
     let mut newLines = contents.lines();
+    // TODO: maybe use lines().collect() ?
+    // https://doc.rust-lang.org/std/iter/trait.Iterator.html
+    let mut lineSub = newLines.next();
     // let iterbitter = contents.iter();
     let mut count = 0;
     let done = false;
-    for x in newLines.next() {
+    for x in 0..10 {
         // if newLines == NULL{
         //     done = true;
         // }
         count += 1;
         println!("count: {}", count);
-        println!("next: {:?}", newLines.next());
+        println!("next: {:?}", lineSub);
+        lineSub = lineSub.next();
     }
 }
