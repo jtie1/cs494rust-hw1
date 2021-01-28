@@ -6,56 +6,114 @@
 * Professor:    Jakob Eriksson
 */
 
-// use std::io::*;
+use std::io::*;
+// use std::fs::File;
 
-/*
-    Testing for:
-    - no parameters
-        - read from stdin
-    - flags
-        * -w    words
-        * -c    bytes
-                - String.len() counts in bytes https://doc.rust-lang.org/std/string/struct.String.html#method.len 
-        * -l    lines
-                TRY: counting \n characters
-        - passed with and without parameters
-    - one or multiple files passed in
-*/
+fn main() -> Result<()> {
+    let mut i = 0;
+    let mut total_words = 0;
+    let mut total_lines = 0;
+    let mut total_bytes = 0;
 
-fn main() {
+    // track which flags are given
+    let mut byte_ = false;
+    let mut word_ = false;
+    let mut line_ = false;
 
-    let args: Vec<String> = std::env::args().collect();
+    // grab arguments
+    let args = BufReader::new(stdin());
 
-    // pseudo code
-    // if ( &args[1] is NOT present )
-    //     standard input
-    // else 
-    //     let filename = &args[1];
+    // store input file
+    let mut filenames: Vec<String> = Vec::new();
 
-    let filename = &args[1];
-    println!("In file {}", filename);
+    for x in args.lines(){
 
-    let contents = std::fs::read_to_string(filename)
-        .expect("Something went wrong reading the file");
+        let input = x?; // doing for y in x.split...() is invalid :(
 
-    println!("With text:\n\n{}", contents);
-    println!("bytes: {}", contents.len());
-    println!("chars: {}", contents.chars().count());
+        for y in input.split_ascii_whitespace(){
+            // check that there is a flag present
+            if y.contains("-"){
+                // check for the type of flag
+                if y.contains("c"){
+                    byte_ = true;
+                }
+                if y.contains("w"){
+                    word_ = true;
+                }
+                if y.contains("l"){
+                    line_ = true;
+                }
+            }
+            // otherwise if there is no flag
+            else if y.contains("."){
+                filenames.push(y.to_string());   // just stores the name of file
+            }
+        }
 
-    let mut newLines = contents.lines();
-    // TODO: maybe use lines().collect() ?
-    // https://doc.rust-lang.org/std/iter/trait.Iterator.html
-    let mut lineSub = newLines.next();
-    // let iterbitter = contents.iter();
-    let mut count = 0;
-    let done = false;
-    for x in 0..10 {
-        // if newLines == NULL{
-        //     done = true;
-        // }
-        count += 1;
-        println!("count: {}", count);
-        println!("next: {:?}", lineSub);
-        lineSub = lineSub.next();
+        // search each file from the input string
+
+        for _e in &filenames{
+            
+            // count amount for this specific file
+            let mut word_count = 0;
+            let mut line_count = 0;
+            // open the file
+            let mut file = std::fs::File::open(&filenames[i])
+                .expect("Unable to open file");
+            let mut contents = String::new();
+            file.read_to_string(&mut contents)?;
+
+            // get number of words
+            for word in contents.split_ascii_whitespace(){
+                word_count += 1;
+            }
+        
+            // get number of lines
+            for line in contents.chars(){
+                if line == '\n'{
+                    line_count += 1;
+                }
+            }
+
+            // print results
+            // if all flags are given or no flags are given
+            if (byte_ && word_ && line_) || (!byte_ && !word_ && !line_){
+                println!("\t{}\t{}\t{}\t{}", line_count, word_count, contents.len(), filenames[i]);
+            }
+            // -wl or lw
+            else if !byte_ && word_ && line_{
+                println!("\t{}\t{}\t{}", word_count, line_count, filenames[i]);
+            }
+            // -cl or lc
+            else if byte_ && !word_ && line_{
+                println!("\t{}\t{}\t{}", line_count, contents.len(), filenames[i]);
+            }
+            // -cw or wc
+            else if byte_ && word_ && !line_{
+                println!("\t{}\t{}\t{}", word_count, contents.len(), filenames[i]);
+            }
+            // -c
+            else if byte_ && !word_ && !line_{
+                println!("\t{}\t{}", contents.len(), filenames[i]);
+            }
+            // -w
+            else if !byte_ && word_ && !line_{
+                println!("\t{}\t{}", word_count, filenames[i]);
+            }
+            // -l
+            else if !byte_ && !word_ && line_{
+                println!("\t{}\t{}", line_count, filenames[i]);
+            }
+
+            total_words += word_count;
+            total_lines += line_count;
+            total_bytes += contents.len();
+            i += 1;
+        }
+        if i > 1{
+            println!("\t{}\t{}\t{}\ttotal", total_lines, total_words, total_bytes);
+        }
     }
+
+    Ok(())
 }
