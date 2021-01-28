@@ -18,12 +18,11 @@ fn main() -> Result<()> {
     // grab arguments
     let args = BufReader::new(stdin());
     // store input file
-    let mut filename: Vec<String> = Vec::new();
+    let mut filenames: Vec<String> = Vec::new();
 
     for x in args.lines(){
 
-        println!("{:?}", x);
-        let input = x?;
+        let input = x?; // doing for y in x.split...() is invalid :(
 
         for y in input.split_ascii_whitespace(){
             // check that there is a flag present
@@ -42,11 +41,25 @@ fn main() -> Result<()> {
             }
             // otherwise if there is no flag
             else if y.contains(".txt"){
-                filename.push(y.to_string());
+                filenames.push(y.to_string());   // just stores the name of file
             }
         }
+
+        let mut file = std::fs::File::open(&filenames[0])
+            .expect("Unable to open file");
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+        println!("contents: {}", contents);
+        let s_mut = contents.as_str();
+        // let mut count = 0;
+        // let size = contents.len();
+        // for word in contents[0..size]{
+        //     count++;
+        // }
+
+        // TODO: try using for whatever in something.split_ascii...blah again
     }
-    // let contents = std::fs::read_to_string(filename)
+    // let contents = std::fs::read_to_string(filenames)
     //     .expect("Something went wrong reading the file");
 
     // println!("With text:\n\n{}", contents);
